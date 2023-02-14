@@ -1,0 +1,21 @@
+development:
+  adapter: postgresql
+  host: postgres
+  username: postgres
+  encoding: unicode
+  pool: 10
+  database: sinatra_project_development
+test:
+  adapter: postgresql
+  host: postgres
+  username: postgres
+  encoding: unicode
+  pool: 10
+  database: sinatra_project_test
+production:
+  adapter: postgresql
+  host: postgres
+  username: postgres
+  encoding: unicode
+  pool: 10
+  database: sinatra_project_production

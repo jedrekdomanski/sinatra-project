@@ -1,0 +1,15 @@
+development:
+  adapter: postgresql
+  encoding: unicode
+  pool: 10
+  database: sinatra_project_development
+test:
+  adapter: postgresql
+  encoding: unicode
+  pool: 10
+  database: sinatra_project_test
+production:
+  adapter: postgresql
+  encoding: unicode
+  pool: 10
+  database: sinatra_project_production

@@ -1,0 +1,24 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:15.2
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+    - "5432:5432"
+
+  web:
+    build:
+      context: .
+    ports:
+      - "4567:4567"
+    links:
+      - postgres
+    environment:
+      PGPASSWORD: postgres
+    volumes:
+      - .:/app
+volumes:
+  db_data:
