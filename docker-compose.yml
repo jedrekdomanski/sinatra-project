@@ -18,8 +18,5 @@ services:
       - postgres
     environment:
       PGPASSWORD: postgres
-    volumes:
-      - app_data:/app
 volumes:
   db_data:
-  app_data:
