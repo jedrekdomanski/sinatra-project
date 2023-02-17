@@ -3,24 +3,19 @@
 class AuthorsController < ApplicationController
   get '/authors' do
     authors = Author.all
-    { authors: authors }.to_json
+    authors.map { |author| serialize(author) }
   end
 
   get '/authors/:id' do
     author = Author.find(params['id'])
-
-    { author: author }.to_json
+    serialize(author)
   end
 
   post '/authors' do
-    data = JSON.parse(request.body.read)
-    author = Author.new(name: data['name'], email: data['email'])
-    if author.save
-      status 200
-      { author: author }.to_json
-    else
-      status 400
-      { errors: author.errors.full_messages }.to_json
-    end
+    author = Author.new(json_params)
+    halt 422, serialize(author) unless author.save
+
+    response.headers['Location'] = "#{base_url}/authors/#{author.id}"
+    status 201
   end
 end

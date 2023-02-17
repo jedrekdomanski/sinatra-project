@@ -11,4 +11,4 @@ require 'bundler/setup'
 Bundler.require(:default, ENV['SINATRA_ENV'])
 
 current_dir = Dir.pwd
-Dir["#{current_dir}/app/{controllers,helpers,models}/*.rb"].sort.each { |file| require file }
+Dir["#{current_dir}/app/{helpers,controllers,models,serializers}/*.rb"].each { |file| require file }

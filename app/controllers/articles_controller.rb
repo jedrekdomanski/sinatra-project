@@ -1,31 +1,34 @@
 # frozen_string_literal: true
 
 class ArticlesController < ApplicationController
+  helpers do
+    def article
+      @article ||= Article.find(params['id'])
+    end
+  end
+
   get '/articles' do
     articles = Article.all
-    { articles: articles }.to_json
+    articles.map { |article| serialize(article) }
   end
 
   get '/articles/:id' do
-    article = Article.find(params['id'])
-    { article: article }.to_json
+    halt_if_not_found!(article)
+    serialize(article)
   end
 
   post '/articles' do
-    data = JSON.parse(request.body.read)
-    article = Article.new(
-      author_id: data['author_id'],
-      title: data['title'],
-      content: data['content'],
-      published_on: Time.now
-    )
-    if article.save
-      status 200
-      { article: article }.to_json
-    else
-      status 400
-      { errors: article.errors.full_messages }.to_json
-    end
+    article = Article.new(json_params)
+
+    halt 422, serialize(article) unless article.save
+
+    response.headers['Location'] = "#{base_url}/articles/#{article.id}"
+    status 201
+  end
+
+  patch '/articles/:id/like' do
+    halt_if_not_found!(article)
+    halt 422, serialize(article) unless article.update(likes: article.likes += 1)
+    serialize(article)
   end
 end
-
