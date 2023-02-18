@@ -3,8 +3,9 @@
 require 'sinatra/activerecord'
 require 'sinatra/activerecord/rake'
 
-require File.join(File.dirname(__FILE__), 'config/environment')
+require File.expand_path('config/environment', __dir__)
 
 task :console do
+  require 'pry'
   Pry.start
 end

@@ -9,7 +9,6 @@ class ApplicationController < Sinatra::Base
   end
 
   before do
-    authenticate!
     content_type :json
   end
 

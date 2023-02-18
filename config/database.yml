@@ -3,6 +3,7 @@ development:
   encoding: unicode
   pool: 10
   database: sinatra_project_development
+  port: 5432
 test:
   adapter: postgresql
   encoding: unicode

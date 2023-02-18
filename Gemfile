@@ -7,7 +7,6 @@ git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 gem 'activerecord'
 gem 'pg'
 gem 'rake'
-gem 'require_all'
 gem 'sinatra'
 gem 'sinatra-activerecord'
 

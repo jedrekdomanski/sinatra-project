@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 class ArticlesController < ApplicationController
+  before do
+    authenticate!
+  end
+
   helpers do
     def article
       @article ||= Article.find(params['id'])
