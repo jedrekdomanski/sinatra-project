@@ -28,8 +28,7 @@ COPY Gemfile.lock /app/Gemfile.lock
 
 RUN gem install bundler:2.2.33
 
-RUN bundle install \
-  --without development test
+RUN bundle install
 
 COPY . /app
 
@@ -37,4 +36,5 @@ COPY config/database.ci.yml config/database.yml
 
 EXPOSE 4567
 
-ENTRYPOINT "./entrypoint.sh"
+ENTRYPOINT ["bundle", "exec"]
+CMD ["rackup", "--host", "0.0.0.0", "-p", "4567" ]

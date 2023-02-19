@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module ApiHelper
+module ApiHelpers
   def serialize(resource)
     serializer_class = "#{Object.const_get(resource.class.name)}Serializer".constantize
     serializer_class.new(resource).to_json
@@ -22,6 +22,10 @@ module ApiHelper
 
   def authenticate!
     halt 403, { message: 'Unauthorized!' }.to_json unless authorized?
+  end
+
+  def article
+    @article ||= Article.find(params['id'])
   end
 
   private

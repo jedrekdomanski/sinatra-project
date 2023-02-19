@@ -7,5 +7,3 @@ require 'sinatra/activerecord'
 require 'sinatra/base'
 require 'json'
 
-current_dir = Dir.pwd
-Dir["#{current_dir}/app/{helpers,controllers,models,serializers}/*.rb"].each { |file| require file }

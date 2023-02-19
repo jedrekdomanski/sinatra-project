@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require File.expand_path('config/environment', __dir__)
+root = ::File.dirname(__FILE__)
+require ::File.join(root, 'app')
 
 run ApplicationController
 use ArticlesController

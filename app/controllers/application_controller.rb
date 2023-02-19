@@ -2,6 +2,7 @@
 
 class ApplicationController < Sinatra::Base
   register Sinatra::ActiveRecordExtension
+  helpers ApiHelpers
 
   configure :production, :development do
     enable :logging

@@ -1,12 +1,6 @@
 # frozen_string_literal: true
 
 class ArticlesController < ApplicationController
-  helpers do
-    def article
-      @article ||= Article.find(params['id'])
-    end
-  end
-
   get '/articles' do
     articles = Article.all
     articles.map { |article| serialize(article) }
