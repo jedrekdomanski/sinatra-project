@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class ArticlesController < ApplicationController
+  before { authenticate! }
+
   get '/articles' do
     articles = Article.all
     articles.map { |article| serialize(article) }

@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class AuthorsController < ApplicationController
+  before { authenticate! }
+
   get '/authors' do
     authors = Author.all
     authors.map { |author| serialize(author) }

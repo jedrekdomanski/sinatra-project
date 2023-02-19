@@ -3,6 +3,14 @@
 root = ::File.dirname(__FILE__)
 require ::File.join(root, 'app')
 
-run ApplicationController
-use ArticlesController
-use AuthorsController
+map '/' do
+  run ApplicationController
+end
+
+map '/articles' do
+  run ArticlesController
+end
+
+map '/authors' do
+  run AuthorsController
+end
