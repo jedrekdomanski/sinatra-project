@@ -3,28 +3,34 @@
 class ArticlesController < ApplicationController
   before { authenticate! }
 
-  get '/articles' do
+  get '/' do
     articles = Article.all
     articles.map { |article| serialize(article) }
   end
 
-  get '/articles/:id' do
+  get '/:id' do
     halt_if_not_found!(article)
     serialize(article)
   end
 
-  post '/articles' do
+  post '/' do
     article = Article.new(json_params)
 
     halt 422, serialize(article) unless article.save
 
     response.headers['Location'] = "#{base_url}/articles/#{article.id}"
-    status 201
+    serialize(article)
   end
 
   patch '/articles/:id/like' do
     halt_if_not_found!(article)
     halt 422, serialize(article) unless article.update(likes: article.likes += 1)
     serialize(article)
+  end
+
+  private
+
+  def article
+    @article ||= Article.find(params['id'])
   end
 end
