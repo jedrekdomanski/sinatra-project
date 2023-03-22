@@ -24,10 +24,6 @@ module ApiHelpers
     halt 403, { message: 'Unauthorized!' }.to_json unless authorized?
   end
 
-  def article
-    @article ||= Article.find(params['id'])
-  end
-
   private
 
   def authorized?
