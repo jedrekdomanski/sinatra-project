@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 ENV['APP_ENV'] = 'test'
+ENV['SINATRA_ENV'] = 'test'
+ENV['RACK_ENV'] = 'test'
 
 require File.expand_path('../../app.rb', __FILE__)
 require 'database_cleaner'
@@ -8,6 +10,7 @@ require 'faker'
 require 'rack/test'
 
 Dir[File.expand_path('spec/support/**/*.rb')].each { |f| require f }
+ActiveRecord::Migration.maintain_test_schema!
 
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|
