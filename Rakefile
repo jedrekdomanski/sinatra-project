@@ -9,3 +9,10 @@ task :console do
   require 'pry'
   Pry.start
 end
+
+namespace :db do
+  task :load_config do
+    require './app'
+  end
+end
+
