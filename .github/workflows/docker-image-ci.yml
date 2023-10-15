@@ -12,6 +12,14 @@ jobs:
       matrix:
         ruby-version: ['2.7']
 
+    services:
+      postgres:
+        image: postgres:12.1-alpine
+        ports:
+          - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
     steps:
     - uses: actions/checkout@v3
     - name: Set up Ruby
@@ -23,4 +31,9 @@ jobs:
         ruby-version: ${{ matrix.ruby-version }}
         bundler-cache: true # runs 'bundle install' and caches installed gems automatically
     - name: Run tests
-      run: bundle exec rspec
+      env:
+        RACK_ENV: 'test'
+        DATABASE_URL: "postgres://postgres@localhost:5432/sinatra_project_test"
+      run: |
+      bundle exec rake db:setup
+      bundle exec rspec
