@@ -35,5 +35,5 @@ jobs:
         RACK_ENV: 'test'
         DATABASE_URL: "postgres://postgres@localhost:5432/sinatra_project_test"
       run: |
-      bundle exec rake db:setup
-      bundle exec rspec
+        bundle exec rake db:setup
+        bundle exec rspec
