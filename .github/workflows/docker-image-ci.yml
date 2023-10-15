@@ -62,4 +62,6 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/sinatra-api:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/sinatra-api:${{ env.BRANCH }}-${{ github.run_number }}
+          build-args: |
+            BRANCH=${{ env.BRANCH }}
