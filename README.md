@@ -1,4 +1,5 @@
-# README #
+# README
+![example branch parameter](https://github.com/github/docs/actions/workflows/main.yml/badge.svg?branch=master)
 ## Setting Up Your Environment
 ### Installing dependencies
 * Run Bundler `bundle install`
