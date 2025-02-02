@@ -12,6 +12,7 @@ services:
   web:
     build:
       context: .
+      target: ci
     ports:
       - "4567:4567"
     links:
@@ -19,7 +20,7 @@ services:
     environment:
       PGPASSWORD: postgres
     env_file:
-      - .env
+      - .env.test
 
 volumes:
   db_data:

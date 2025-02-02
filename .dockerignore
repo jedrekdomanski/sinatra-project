@@ -1,2 +1,12 @@
-config/database.yml
+.bundle/*
+tmp/*
+log/*
+db/*.sqlite3
+.git
 
+public/system/*
+
+data
+
+/db/schema_cache.yml
+/public/assets

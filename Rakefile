@@ -7,6 +7,7 @@ require File.expand_path('config/environment', __dir__)
 
 task :console do
   require 'pry'
+  require './app'
   Pry.start
 end
 
@@ -15,4 +16,3 @@ namespace :db do
     require './app'
   end
 end
-

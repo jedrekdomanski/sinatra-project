@@ -6,4 +6,3 @@ require 'active_record'
 require 'sinatra/activerecord'
 require 'sinatra/base'
 require 'json'
-

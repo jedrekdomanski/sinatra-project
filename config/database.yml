@@ -1,13 +1,15 @@
-development:
+default: &default
   adapter: postgresql
   encoding: unicode
   pool: 10
+development:
+  <<: *default
+  host: postgres
+  username: postgres
   database: sinatra_project_development
   port: 5432
 test:
-  adapter: postgresql
-  encoding: unicode
-  pool: 10
+  <<: *default
   database: sinatra_project_test
 production:
   adapter: postgresql
