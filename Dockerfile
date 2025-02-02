@@ -9,7 +9,6 @@ RUN apk add --update \
     gcompat \
     shared-mime-info \
     postgresql-dev \
-    postgresql-client \
     libpq
 
 # This stage will be responsible for installing gems and npm packages
