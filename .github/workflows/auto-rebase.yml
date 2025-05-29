@@ -1,0 +1,64 @@
+name: Auto Rebase After 2 Approvals
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  auto-rebase:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.BOT_TOKEN }}
+
+      - name: Get number of approvals
+        id: approvals
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          REPO=${{ github.repository }}
+          APPROVALS=$(gh pr reviews $PR_NUMBER --repo "$REPO" --json state --jq '[.[] | select(.state == "APPROVED")] | length')
+          echo "Approvals: $APPROVALS"
+          echo "approvals=$APPROVALS" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      - name: Exit if not enough approvals
+        if: steps.approvals.outputs.approvals < 1
+        run: echo "Not enough approvals, skipping rebase."
+
+      - name: Setup Git
+        if: steps.approvals.outputs.approvals >= 1
+        run: |
+          git config user.name "Rebase Bot"
+          git config user.email "jedrek.domanski@gmail.com"
+
+      - name: Fetch base branch
+        if: steps.approvals.outputs.approvals >= 1
+        run: |
+          git remote add upstream https://github.com/${{ github.repository }}.git
+          git fetch upstream
+
+      - name: Attempt rebase
+        id: rebase
+        if: steps.approvals.outputs.approvals >= 1
+        run: |
+          set +e
+          git rebase upstream/master
+          echo "Rebase exit code: $?"
+          echo "rebase_status=$?" >> $GITHUB_OUTPUT
+          set -e
+
+      - name: Comment on PR if conflict occurs
+        if: steps.rebase.outputs.rebase_status != '0'
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body "❌ Auto-rebase failed due to conflicts. Please rebase manually."
+        env:
+          GH_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      - name: Push rebased branch
+        if: steps.rebase.outputs.rebase_status == '0'
+        run: git push --force-with-lease
