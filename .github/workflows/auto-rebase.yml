@@ -1,4 +1,4 @@
-name: Auto Rebase PRs with 'Ready for Release' Label on Master Update
+name: Auto Rebase Labeled PRs on Master Update
 
 on:
   push:
@@ -6,63 +6,71 @@ on:
       - master
 
 jobs:
-  rebase-ready-prs:
+  auto-rebase-ready-prs:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Install GitHub CLI
+        uses: cli/cli-action@v2
+
+      - name: List PRs with "Ready for Release" label
+        id: list_prs
         run: |
-          sudo apt-get update
-          sudo apt-get install -y gh
+          gh pr list --state open --label "Ready for Release" --json number,headRefName \
+            --jq '.[] | "\(.number) \(.headRefName)"' > prs.txt
+          cat prs.txt
 
-
-      - name: Fetch open PRs with label 'Ready for Release' targeting master
-        id: get-prs
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
+      - name: Exit if no PRs found
         run: |
-          prs=$(gh pr list --repo "$REPO" --state open --base master --label "Ready for Release" --json number,headRefName --jq '.[] | "\(.number) \(.headRefName)"')
-          echo "$prs" > prs.txt
-          echo "::set-output name=prs::$prs"
+          if [ ! -s prs.txt ]; then
+            echo "No PRs with label 'Ready for Release'. Exiting."
+            exit 0
+          fi
 
-      - name: Rebase each PR
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
+      - name: Rebase each PR on master
         run: |
           while read -r pr_num pr_branch; do
-            if [[ -z "$pr_num" || -z "$pr_branch" ]]; then
-              echo "Empty PR number or branch name, skipping..."
-              continue
-            fi
             echo "Processing PR #$pr_num with branch $pr_branch"
 
-            # Clone repo fresh
-            rm -rf repo
-            git clone https://github.com/$REPO.git repo
+            # Clone the repo using GitHub CLI
+            gh repo clone ${{ github.repository }} repo
             cd repo
 
-            # Set git user for commits
+            # Set up Git
             git config user.name "Rebase Bot"
             git config user.email "jedrek.domanski@gmail.com"
 
-            # Fetch master and PR branch
-            git fetch origin master
-            git fetch origin $pr_branch
+            # Checkout the PR branch
+            git checkout "$pr_branch"
 
-            # Checkout PR branch
-            git checkout -B $pr_branch origin/$pr_branch
+            # Add upstream remote and fetch latest master
+            git remote add upstream https://github.com/${{ github.repository }}.git
+            git fetch upstream master
 
-            # Rebase onto master
-            if git rebase origin/master; then
-              # Push back rebased branch
-              git push --force-with-lease origin $pr_branch
-              echo "Successfully rebased and pushed PR #$pr_num"
-            else
-              echo "Rebase failed for PR #$pr_num, commenting on PR"
-              gh pr comment $pr_num --body "❌ Auto-rebase failed due to conflicts. Please rebase manually."
-              git rebase --abort
+            # Rebase
+            set +e
+            git rebase upstream/master
+            status=$?
+            set -e
+
+            if [ "$status" -ne 0 ]; then
+              echo "❌ Rebase failed for PR #$pr_num. Commenting."
+              gh pr comment "$pr_num" --body "❌ Auto-rebase failed due to conflicts. Please rebase manually."
+              cd ..
+              rm -rf repo
+              continue
             fi
+
+            # Push changes back
+            git push --force-with-lease
+
             cd ..
+            rm -rf repo
           done < prs.txt
+
