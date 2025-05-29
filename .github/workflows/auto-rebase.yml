@@ -17,6 +17,10 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           token: ${{ secrets.BOT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Create and switch to branch
+        run: git checkout -B ${{ github.event.pull_request.head.ref }}
 
       - name: Setup Git
         run: |
@@ -47,4 +51,3 @@ jobs:
       - name: Push rebased branch
         if: steps.rebase.outputs.rebase_status == '0'
         run: git push --force-with-lease
-
