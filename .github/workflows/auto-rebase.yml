@@ -10,10 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set up GitHub CLI
-        uses: cli/cli@v3
-        with:
-          version: latest
+      - name: Install GitHub CLI
+        uses: actions/setup-gh-cli@v2
 
       - name: Authenticate gh CLI
         env:
