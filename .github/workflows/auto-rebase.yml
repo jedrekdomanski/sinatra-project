@@ -1,64 +1,69 @@
-name: Auto Rebase After 2 Approvals
+name: Auto Rebase PRs with 'Ready for Release' Label on Master Update
 
 on:
-  pull_request_review:
-    types: [submitted]
+  push:
+    branches:
+      - master
 
 jobs:
-  auto-rebase:
+  rebase-ready-prs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout PR branch
-        uses: actions/checkout@v4
+      - name: Set up GitHub CLI
+        uses: cli/cli@v3
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          token: ${{ secrets.BOT_TOKEN }}
+          version: latest
 
-      - name: Get number of approvals
-        id: approvals
-        run: |
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          REPO=${{ github.repository }}
-          APPROVALS=$(gh pr reviews $PR_NUMBER --repo "$REPO" --json state --jq '[.[] | select(.state == "APPROVED")] | length')
-          echo "Approvals: $APPROVALS"
-          echo "approvals=$APPROVALS" >> "$GITHUB_OUTPUT"
+      - name: Authenticate gh CLI
         env:
           GH_TOKEN: ${{ secrets.BOT_TOKEN }}
-
-      - name: Exit if not enough approvals
-        if: steps.approvals.outputs.approvals < 1
-        run: echo "Not enough approvals, skipping rebase."
-
-      - name: Setup Git
-        if: steps.approvals.outputs.approvals >= 1
         run: |
-          git config user.name "Rebase Bot"
-          git config user.email "jedrek.domanski@gmail.com"
+          echo $GH_TOKEN | gh auth login --with-token
 
-      - name: Fetch base branch
-        if: steps.approvals.outputs.approvals >= 1
-        run: |
-          git remote add upstream https://github.com/${{ github.repository }}.git
-          git fetch upstream
-
-      - name: Attempt rebase
-        id: rebase
-        if: steps.approvals.outputs.approvals >= 1
-        run: |
-          set +e
-          git rebase upstream/master
-          echo "Rebase exit code: $?"
-          echo "rebase_status=$?" >> $GITHUB_OUTPUT
-          set -e
-
-      - name: Comment on PR if conflict occurs
-        if: steps.rebase.outputs.rebase_status != '0'
-        run: |
-          gh pr comment ${{ github.event.pull_request.number }} --body "❌ Auto-rebase failed due to conflicts. Please rebase manually."
+      - name: Fetch open PRs with label 'Ready for Release' targeting master
+        id: get-prs
         env:
           GH_TOKEN: ${{ secrets.BOT_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          prs=$(gh pr list --repo "$REPO" --state open --base master --label "Ready for Release" --json number,headRefName --jq '.[] | "\(.number) \(.headRefName)"')
+          echo "$prs" > prs.txt
+          echo "::set-output name=prs::$prs"
 
-      - name: Push rebased branch
-        if: steps.rebase.outputs.rebase_status == '0'
-        run: git push --force-with-lease
+      - name: Rebase each PR
+        env:
+          GH_TOKEN: ${{ secrets.BOT_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          while read -r pr_num pr_branch; do
+            echo "Processing PR #$pr_num with branch $pr_branch"
+
+            # Clone repo fresh
+            rm -rf repo
+            git clone https://github.com/$REPO.git repo
+            cd repo
+
+            # Set git user for commits
+            git config user.name "Rebase Bot"
+            git config user.email "your-email@example.com"
+
+            # Fetch master and PR branch
+            git fetch origin master
+            git fetch origin $pr_branch
+
+            # Checkout PR branch
+            git checkout -B $pr_branch origin/$pr_branch
+
+            # Rebase onto master
+            if git rebase origin/master; then
+              # Push back rebased branch
+              git push --force-with-lease origin $pr_branch
+              echo "Successfully rebased and pushed PR #$pr_num"
+            else
+              echo "Rebase failed for PR #$pr_num, commenting on PR"
+              gh pr comment $pr_num --body "❌ Auto-rebase failed due to conflicts. Please rebase manually."
+              git rebase --abort
+            fi
+            cd ..
+          done < prs.txt
