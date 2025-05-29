@@ -11,7 +11,9 @@ jobs:
 
     steps:
       - name: Install GitHub CLI
-        uses: actions/setup-gh-cli@v2
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh
 
       - name: Authenticate gh CLI
         env:
