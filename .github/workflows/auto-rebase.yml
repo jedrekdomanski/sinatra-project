@@ -15,16 +15,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gh
 
-      - name: Authenticate gh CLI
-        env:
-          GH_TOKEN: ${{ secrets.BOT_TOKEN }}
-        run: |
-          echo $GH_TOKEN | gh auth login --with-token
 
       - name: Fetch open PRs with label 'Ready for Release' targeting master
         id: get-prs
         env:
-          GH_TOKEN: ${{ secrets.BOT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
           prs=$(gh pr list --repo "$REPO" --state open --base master --label "Ready for Release" --json number,headRefName --jq '.[] | "\(.number) \(.headRefName)"')
@@ -33,7 +28,7 @@ jobs:
 
       - name: Rebase each PR
         env:
-          GH_TOKEN: ${{ secrets.BOT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
           while read -r pr_num pr_branch; do
@@ -46,7 +41,7 @@ jobs:
 
             # Set git user for commits
             git config user.name "Rebase Bot"
-            git config user.email "your-email@example.com"
+            git config user.email "jedrek.domanski@gmail.com"
 
             # Fetch master and PR branch
             git fetch origin master
