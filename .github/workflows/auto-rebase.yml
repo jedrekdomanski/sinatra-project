@@ -32,6 +32,10 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           while read -r pr_num pr_branch; do
+            if [[ -z "$pr_num" || -z "$pr_branch" ]]; then
+              echo "Empty PR number or branch name, skipping..."
+              continue
+            fi
             echo "Processing PR #$pr_num with branch $pr_branch"
 
             # Clone repo fresh
