@@ -20,6 +20,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y gh 
+  
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: List PRs with "Ready for Release" label
         id: list_prs
