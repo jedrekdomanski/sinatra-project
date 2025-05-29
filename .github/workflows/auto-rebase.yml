@@ -17,7 +17,9 @@ jobs:
 
     steps:
       - name: Install GitHub CLI
-        uses: cli/cli-action@v2
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh 
 
       - name: List PRs with "Ready for Release" label
         id: list_prs
