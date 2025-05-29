@@ -2,20 +2,8 @@ default: &default
   adapter: postgresql
   encoding: unicode
   pool: 5
-development:
-  <<: *default
-  host: postgres
-  username: postgres
-  database: sinatra_project_development
 test:
   <<: *default
   host: postgres
   username: postgres
   database: sinatra_project_test
-production:
-  <<: *default
-  host: <%= ENV['DATABASE_URL'] %>
-  username: <%= ENV['DATABASE_USERNAME'] %>
-  password: <%= ENV['DATABASE_PASSWORD'] %>
-  database: sinatra_project_production
-  port: 5432
